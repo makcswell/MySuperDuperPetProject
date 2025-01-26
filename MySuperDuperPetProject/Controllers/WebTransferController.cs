@@ -9,19 +9,19 @@ namespace MySuperDuperPetProject.Controllers
     [Route("[controller]")]
     public class WebTransferController(ILogger<WebTransferController> logger, ITransferLogic logic) : ControllerBase
     {
-        [HttpPost("transfer/{from}/{to}")]
+        [HttpPost("transfer/{from}/{to}/")]
         public async Task<IActionResult> PostTransfer([Required][FromRoute] string from, [Required][FromRoute] string to, [Required][FromQuery] string username)// добавил username
         {
-           
+
             logger.LogInformation("Get user request. Transfer from {from} to {to} by user {user}", from, to, username);
             if (string.IsNullOrWhiteSpace(from) || string.IsNullOrWhiteSpace(to))
             {
                 return BadRequest("Некорректно заданы переходы!");
             }
-         /*   if (username != )
-            {
-                return BadRequest("Пользователь не авторизован!");
-            }*/
+            /*   if (username != )
+               {
+                   return BadRequest("Пользователь не авторизован!");
+               }*/
             if (await logic.PostTransfer(username, from, to, HttpContext.RequestAborted))
             {
                 return Ok();
@@ -32,10 +32,10 @@ namespace MySuperDuperPetProject.Controllers
         public async Task<IActionResult> GetUserTransfersByPeriod([Required][FromQuery] string username, [Required][FromQuery] DateTimeOffset from, [Required][FromQuery] DateTimeOffset to)//добавил username
         {
             logger.LogInformation("Get user request. Get user transfers by user {user} and period from {from} to {to}", username, from, to);
-          /*  if (username != model.Token)
-            {
-                return BadRequest("Идентификатор пользователя не может быть меньше нуля!");
-            }*/
+            /*  if (username != model.Token)
+              {
+                  return BadRequest("Идентификатор пользователя не может быть меньше нуля!");
+              }*/
             if (from > to)
             {
                 return BadRequest("Некорреткно задан временной период!");

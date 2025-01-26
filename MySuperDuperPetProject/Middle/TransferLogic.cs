@@ -2,13 +2,21 @@
 using Microsoft.EntityFrameworkCore.Storage;
 using MySuperDuperPetProject.Models;
 using MySuperDuperPetProject.TransferDatabaseContext;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using MySuperDuperPetProject.Controllers;
+using System.Net;
+
 
 namespace MySuperDuperPetProject.Middle
 {
 
-    public class TransferLogic(ILogger<TransferLogic> logger, TransferDbContext db) : ITransferLogic
+    public class TransferLogic(ILogger<TransferLogic> logger, TransferDbContext db) : ITransferLogic 
     {
+        
+
         private static string GetTransferHash(string from, string to)
         {
             StringBuilder sb = new();
@@ -16,19 +24,22 @@ namespace MySuperDuperPetProject.Middle
             sb.Append(to);
             return sb.ToString();
         }
-       
+
         public async Task<bool> PostTransfer(string username, string from, string to, CancellationToken token = default)//добавил username для взятия из таблицы
         {
             await using IDbContextTransaction transaction = await db.Database.BeginTransactionAsync(token);
             try
             {
                 User? userEntity = await db.Users.FirstOrDefaultAsync(u => u.Name == username, token);
+               
                 if (userEntity == null)
                 {
-                    logger.LogWarning("User not found: {username}",username);
+                    logger.LogWarning("User not found: {username}", username);
 
                     throw new UnauthorizedAccessException("User not authorized.");
                 }
+                
+              
                 Transfers trans = new()
                 {
                     PageFrom = from,
@@ -61,21 +72,29 @@ namespace MySuperDuperPetProject.Middle
                 await transaction.CommitAsync(token);
                 return true;
             }
-            catch (Exception ex)
+            catch (UnauthorizedAccessException)
             {
                 await transaction.RollbackAsync(token);
-                logger.LogError(ex, "Error on posting transfer!");
+                throw; 
             }
-            return false;
+            catch (Exception ex)
+            {
+
+                await transaction.RollbackAsync(token);
+                logger.LogError(ex, "Error on posting transfer!");
+                return false;
+            }
+            
         }
-        public async Task<IEnumerable<TransferResponseModel>?> GetTransfers(string username, DateTimeOffset from, DateTimeOffset to, CancellationToken token = default)//добавил username для взятия из таблицы
+        public async Task<IEnumerable<TransferResponseModel>?> GetTransfers(string username, DateTimeOffset from, DateTimeOffset to, CancellationToken token = default) //добавил username для взятия из таблицы
         {
             User? userfromdb = await db.Users.FirstOrDefaultAsync(u => u.Name == username, token);
 
             if (userfromdb == null)//Условие для проверки по username
             {
-                logger.LogWarning("Пользователь не найден!");
-                return null;
+                logger.LogWarning("Пользователь не найден: {username}",username);
+                throw new UnauthorizedAccessException("Пользователь не авторизован.");
+                
             }
             try
             {
@@ -86,6 +105,7 @@ namespace MySuperDuperPetProject.Middle
                 logger.LogError(ex, "Error on getting transfers by user and period!");
                 return null;
             }
+
         }
 
         public async Task<IEnumerable<TransferStatisticResponseModel>?> GetMostPopularTransfer(int count, CancellationToken token = default)

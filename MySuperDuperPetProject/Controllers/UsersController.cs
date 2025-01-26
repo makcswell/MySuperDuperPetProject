@@ -5,15 +5,20 @@ using MySuperDuperPetProject.Models;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 
+
 //05.01.2025
 
 namespace MySuperDuperPetProject.Controllers
 {
+
     [Route("[controller]")]
     [ApiController]
     public class UsersController(ILogger<UsersController> logger, UsersLogic logic) : ControllerBase
     {
+        
+
         [HttpPost("[action]")]
+
         public async Task<IActionResult> Register([Required][FromBody] RegisterApiRequestModel model)
         {
             if (string.IsNullOrWhiteSpace(model.Username))
@@ -55,8 +60,14 @@ namespace MySuperDuperPetProject.Controllers
             UserSessionApiResponseModel? response = logic.RefreshSession(refreshToken, sessionId);
             return response != null ? Ok(response) : Unauthorized();
         }
+       
         [HttpPut("change/password")]
         [Authorize(Roles = "Users.ChangePassword")]
+
+
+
+       
+
         public async Task<IActionResult> ChangeUserPassword([Required][FromBody] ChangePasswordApiRequestModel model)
         {
             if (string.IsNullOrWhiteSpace(model.CurrentPassword))
@@ -67,7 +78,9 @@ namespace MySuperDuperPetProject.Controllers
             {
                 return BadRequest("Empty new pas");
             }
+
             string? username = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value; //берем username из JWT
+
             if (string.IsNullOrWhiteSpace(username))
             {
                 return Unauthorized("There's no username in JWT!");
@@ -77,8 +90,24 @@ namespace MySuperDuperPetProject.Controllers
             {
                 return Unauthorized("There's no sessionId in JWT!");
             }
+            
 
             return await logic.ChangeUserPassword(username, PasswordHasher.HashPassword(model.CurrentPassword), PasswordHasher.HashPassword(model.NewPassword), sessionId, HttpContext.RequestAborted) ? Ok() : NotFound();
+        }
+        [HttpPost("transfer")]
+        [Authorize]
+        public async Task<IActionResult> Transfer(string from, string to)
+        {
+            
+            string? username = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return Unauthorized("There's no username in JWT!");
+            }
+
+            
+            return Ok(new { Username = username, From = from, To = to }); 
         }
         [HttpGet("user/{username}")]
         [Authorize]
@@ -92,9 +121,6 @@ namespace MySuperDuperPetProject.Controllers
             UsersApiModel? user = await logic.GetUsernameFromDB(username, HttpContext.RequestAborted);
             return user != null ? Ok(user) : NotFound("User not found");
         }
-
-
-
 
 
         [HttpPost("role")]
@@ -122,4 +148,9 @@ namespace MySuperDuperPetProject.Controllers
             return Ok(RolesCollectionStorage.Roles);
         }
     }
-}
+  
+
+
+
+
+        }
