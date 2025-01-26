@@ -29,6 +29,7 @@ namespace MySuperDuperPetProject
                 options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 
+
             })
             .AddJwtBearer(cfg =>
             {
