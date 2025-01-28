@@ -94,21 +94,7 @@ namespace MySuperDuperPetProject.Controllers
 
             return await logic.ChangeUserPassword(username, PasswordHasher.HashPassword(model.CurrentPassword), PasswordHasher.HashPassword(model.NewPassword), sessionId, HttpContext.RequestAborted) ? Ok() : NotFound();
         }
-        [HttpPost("transfer")]
-        [Authorize]
-        public async Task<IActionResult> Transfer(string from, string to)
-        {
-            
-            string? username = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrWhiteSpace(username))
-            {
-                return Unauthorized("There's no username in JWT!");
-            }
-
-            
-            return Ok(new { Username = username, From = from, To = to }); 
-        }
+   
         [HttpGet("user/{username}")]
         [Authorize]
         public async Task<IActionResult> GetUserByUsername(string username)

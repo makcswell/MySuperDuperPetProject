@@ -45,7 +45,7 @@ namespace MySuperDuperPetProject.Middle
                 return false;
             }
         }
-        
+
         public async Task<UserSessionApiResponseModel?> LoginUser(string username, string password, CancellationToken token = default)
         {
             try
@@ -58,7 +58,7 @@ namespace MySuperDuperPetProject.Middle
                 string sessionId = Guid.NewGuid().ToString("N");
                 return GenerateToken(user.Name, user.Role.Roles, sessionId);
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 logger.LogError(ex, "Error on logining user!");
                 return null;
@@ -83,7 +83,7 @@ namespace MySuperDuperPetProject.Middle
             [
                 new(ClaimTypes.NameIdentifier, username),
                 new("SessionId", sessionId),
-                new Claim("Constant","sas")
+                new Claim("Constant", "sas")
             ];
             roles.ToList().ForEach(r =>
             {
@@ -114,13 +114,13 @@ namespace MySuperDuperPetProject.Middle
 
             return result;
         }
-       
+
         public async Task<bool> ChangeUserPassword(string username, string oldpass, string newpass, string sessionId, CancellationToken token = default)//добавил username для взятия из таблицы
         {
             try
             {
                 User? user = await db.Users.FirstOrDefaultAsync(u => u.Name == username && u.Password == oldpass, token);
-               
+
                 if (user == null)
                 {
                     return false;
@@ -158,7 +158,7 @@ namespace MySuperDuperPetProject.Middle
                 await db.SaveChangesAsync(token);
                 return true;
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 logger.LogError(ex, "Error on creating or updating role!");
                 return false;
@@ -172,7 +172,7 @@ namespace MySuperDuperPetProject.Middle
             try
             {
                 User? user = await db.Users.FirstOrDefaultAsync(u => u.Name == username, token);
-                if(user == null)
+                if (user == null)
                 {
                     return null;
                 }
@@ -180,7 +180,7 @@ namespace MySuperDuperPetProject.Middle
                 {
                     Id = user.Id,
                     username = user.Name,
-                    
+
                 };
 
             }
@@ -191,7 +191,7 @@ namespace MySuperDuperPetProject.Middle
             }
         }
 
-       
+
         public async Task<IReadOnlyList<RoleApiModel>?> GetRoles(CancellationToken token = default)
         {
             try

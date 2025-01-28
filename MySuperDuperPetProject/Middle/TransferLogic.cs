@@ -13,9 +13,9 @@ using System.Net;
 namespace MySuperDuperPetProject.Middle
 {
 
-    public class TransferLogic(ILogger<TransferLogic> logger, TransferDbContext db) : ITransferLogic 
+    public class TransferLogic(ILogger<TransferLogic> logger, TransferDbContext db) : ITransferLogic
     {
-        
+
 
         private static string GetTransferHash(string from, string to)
         {
@@ -31,15 +31,15 @@ namespace MySuperDuperPetProject.Middle
             try
             {
                 User? userEntity = await db.Users.FirstOrDefaultAsync(u => u.Name == username, token);
-               
+
                 if (userEntity == null)
                 {
                     logger.LogWarning("User not found: {username}", username);
 
                     throw new UnauthorizedAccessException("User not authorized.");
                 }
-                
-              
+
+
                 Transfers trans = new()
                 {
                     PageFrom = from,
@@ -75,7 +75,7 @@ namespace MySuperDuperPetProject.Middle
             catch (UnauthorizedAccessException)
             {
                 await transaction.RollbackAsync(token);
-                throw; 
+                throw;
             }
             catch (Exception ex)
             {
@@ -84,7 +84,7 @@ namespace MySuperDuperPetProject.Middle
                 logger.LogError(ex, "Error on posting transfer!");
                 return false;
             }
-            
+
         }
         public async Task<IEnumerable<TransferResponseModel>?> GetTransfers(string username, DateTimeOffset from, DateTimeOffset to, CancellationToken token = default) //добавил username для взятия из таблицы
         {
@@ -92,9 +92,9 @@ namespace MySuperDuperPetProject.Middle
 
             if (userfromdb == null)//Условие для проверки по username
             {
-                logger.LogWarning("Пользователь не найден: {username}",username);
+                logger.LogWarning("Пользователь не найден: {username}", username);
                 throw new UnauthorizedAccessException("Пользователь не авторизован.");
-                
+
             }
             try
             {
@@ -108,8 +108,17 @@ namespace MySuperDuperPetProject.Middle
 
         }
 
-        public async Task<IEnumerable<TransferStatisticResponseModel>?> GetMostPopularTransfer(int count, CancellationToken token = default)
+        public async Task<IEnumerable<TransferStatisticResponseModel>?> GetMostPopularTransfer(string username, int count, CancellationToken token = default)
         {
+
+            User? userEntity = await db.Users.FirstOrDefaultAsync(u => u.Name == username, token);
+
+            if (userEntity == null)
+            {
+                logger.LogWarning("User not found: {username}", username);
+
+                throw new UnauthorizedAccessException("User not authorized.");
+            }
             try
             {
                 return await db.TransfersStatistics.OrderByDescending(ts => ts.Count).Take(count).AsNoTracking().Select(ts => new TransferStatisticResponseModel(ts.Count, ts.From, ts.To)).ToListAsync(token);
