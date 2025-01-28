@@ -1,26 +1,34 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿using Microsoft.Extensions.Caching.Memory;
+using System.IdentityModel.Tokens.Jwt;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace MySuperDuperPetProject.Middle
 {
     
     public class ClaimsCheckMiddleware
     {
-      /*  public async Task Invoke(HttpContext context)
+        public async Task Invoke(HttpContext context, RequestDelegate next)
         {
-            if (context.Request.Headers.TryGetValue("Authorization",out var token))
+           
+            if(context.User?.Identity?.IsAuthenticated ?? false)
             {
-                var jwtToken = token.ToString().Split(" ").Last();
-                var handler = new JwtSecurityTokenHandler();
-                var jwtTokenObj = handler.ReadJwtToken(jwtToken);                                           
-                if (!jwtTokenObj.Claims.Any(c=>c.Type == "Constant")){
-                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                    await context.Response.WriteAsync("Unathorized:Missing required claim");
+                string? Constant = context.User.Claims?.FirstOrDefault(c=> c.Type == "Constant")?.Value;
+                if (string.IsNullOrWhiteSpace(Constant))
+                {
+                    context.Response.StatusCode = 401;
                     return;
                 }
-
-
+                IMemoryCache cache = context.RequestServices.GetService<IMemoryCache>()!;
+                if (!cache.TryGetValue(Constant, out _))
+                {
+                    context.Response.StatusCode = 401;
+                    return;
+                }
             }
+            await next.Invoke(context);
 
-        }*/
+        }
+
     }
-}
+    }
+
