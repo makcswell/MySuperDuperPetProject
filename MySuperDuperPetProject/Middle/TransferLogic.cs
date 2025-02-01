@@ -1,13 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Text;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using MySuperDuperPetProject.Models;
 using MySuperDuperPetProject.TransferDatabaseContext;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
-using System.Text;
-using MySuperDuperPetProject.Controllers;
-using System.Net;
 
 
 namespace MySuperDuperPetProject.Middle
@@ -25,19 +20,19 @@ namespace MySuperDuperPetProject.Middle
             return sb.ToString();
         }
 
-        public async Task<bool> PostTransfer(string username, string from, string to, CancellationToken token = default)//добавил username для взятия из таблицы
+        public async Task<bool> PostTransfer(int userId, string username, string from, string to, CancellationToken token = default)//добавил username для взятия из таблицы
         {
             await using IDbContextTransaction transaction = await db.Database.BeginTransactionAsync(token);
             try
             {
-                User? userEntity = await db.Users.FirstOrDefaultAsync(u => u.Name == username, token);
-
-                if (userEntity == null)
-                {
-                    logger.LogWarning("User not found: {username}", username);
-
-                    throw new UnauthorizedAccessException("User not authorized.");
-                }
+                //User? userEntity = await db.Users.FirstOrDefaultAsync(u => u.Name == username, token);
+                //
+                //if (userEntity == null)
+                //{
+                //    logger.LogWarning("User not found: {username}", username);
+                //
+                //    return false;
+                //}
 
 
                 Transfers trans = new()
@@ -45,7 +40,7 @@ namespace MySuperDuperPetProject.Middle
                     PageFrom = from,
                     PageTo = to,
                     TransferUTC = DateTimeOffset.UtcNow,
-                    User = userEntity
+                    UserId = userId,
                 };
                 await db.Transfers.AddAsync(trans, token);
 
@@ -72,11 +67,6 @@ namespace MySuperDuperPetProject.Middle
                 await transaction.CommitAsync(token);
                 return true;
             }
-            catch (UnauthorizedAccessException)
-            {
-                await transaction.RollbackAsync(token);
-                throw;
-            }
             catch (Exception ex)
             {
 
@@ -86,16 +76,8 @@ namespace MySuperDuperPetProject.Middle
             }
 
         }
-        public async Task<IEnumerable<TransferResponseModel>?> GetTransfers(string username, DateTimeOffset from, DateTimeOffset to, CancellationToken token = default) //добавил username для взятия из таблицы
+        public async Task<IEnumerable<TransferResponseModel>?> GetTransfers(DateTimeOffset from, DateTimeOffset to, CancellationToken token = default)
         {
-            User? userfromdb = await db.Users.FirstOrDefaultAsync(u => u.Name == username, token);
-
-            if (userfromdb == null)//Условие для проверки по username
-            {
-                logger.LogWarning("Пользователь не найден: {username}", username);
-                throw new UnauthorizedAccessException("Пользователь не авторизован.");
-
-            }
             try
             {
                 return await db.Transfers.Where(t => t.TransferUTC >= from && t.TransferUTC <= to).AsNoTracking().Select(t => new TransferResponseModel(t.PageFrom, t.PageTo)).ToListAsync(token);
@@ -105,13 +87,10 @@ namespace MySuperDuperPetProject.Middle
                 logger.LogError(ex, "Error on getting transfers by user and period!");
                 return null;
             }
-
         }
 
         public async Task<IEnumerable<TransferStatisticResponseModel>?> GetMostPopularTransfer(int count, CancellationToken token = default)
         {
-
-           
             try
             {
                 return await db.TransfersStatistics.OrderByDescending(ts => ts.Count).Take(count).AsNoTracking().Select(ts => new TransferStatisticResponseModel(ts.Count, ts.From, ts.To)).ToListAsync(token);

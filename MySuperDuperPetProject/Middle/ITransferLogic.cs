@@ -4,8 +4,8 @@ namespace MySuperDuperPetProject.Middle
 {
     public interface ITransferLogic
     {
-        Task<IEnumerable<TransferStatisticResponseModel>?> GetMostPopularTransfer(string username,int count, CancellationToken token = default);//добавил username для проверки
-        Task<IEnumerable<TransferResponseModel>?> GetTransfers(string username,DateTimeOffset from, DateTimeOffset to, CancellationToken token = default);//добавил username для проверки
-        Task<bool> PostTransfer(string from, string to, CancellationToken token = default);//добавил username для проверки
+        Task<IEnumerable<TransferStatisticResponseModel>?> GetMostPopularTransfer(int count, CancellationToken token = default);
+        Task<IEnumerable<TransferResponseModel>?> GetTransfers(DateTimeOffset from, DateTimeOffset to, CancellationToken token = default);
+        Task<bool> PostTransfer(int userId, string username, string from, string to, CancellationToken token = default);
     }
 }

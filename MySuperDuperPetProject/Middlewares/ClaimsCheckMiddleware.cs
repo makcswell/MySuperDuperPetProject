@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
+using MySuperDuperPetProject.Middle;
 
 
 namespace MySuperDuperPetProject.Middlewares
@@ -11,16 +12,17 @@ namespace MySuperDuperPetProject.Middlewares
 
             if (context.User?.Identity?.IsAuthenticated ?? false)
             {
-                string? Constant = context.User.Claims?.FirstOrDefault(c => c.Type == "Constant")?.Value;
-                if (string.IsNullOrWhiteSpace(Constant))
+                if (context.User.Claims?.FirstOrDefault
+                    (c => c.Type == CustomClaimTypesStorage.ConstantClaim.Type && 
+                    c.Value == CustomClaimTypesStorage.ConstantClaim.Value) == null)
                 {
                     context.Response.StatusCode = 401;
+                    await context.Response.WriteAsync("Please regenerate token!");
                     return;
                 }
 
             }
             await next.Invoke(context);
-
         }
 
     }

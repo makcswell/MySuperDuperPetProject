@@ -51,12 +51,12 @@ namespace MySuperDuperPetProject.Middle
             try
             {
                 User? user = await db.Users.Include(u => u.Role).AsNoTracking().FirstOrDefaultAsync(u => u.Name == username && u.Password == password, token);
-                if (username == null)
+                if (user == null)
                 {
                     return null;
                 }
                 string sessionId = Guid.NewGuid().ToString("N");
-                return GenerateToken(user.Name, user.Role.Roles, sessionId);
+                return GenerateToken(user.Id, user.Name, user.Role.Roles, sessionId);
             }
             catch (Exception ex)
             {
@@ -65,25 +65,26 @@ namespace MySuperDuperPetProject.Middle
             }
         }
 
-        public UserSessionApiResponseModel? RefreshSession(string refreshToken, string oldSessiondId)
+        public UserSessionApiResponseModel? RefreshSession(string refreshToken, string oldSessiondId, int userId)
         {
             if (!cache.TryGetValue(oldSessiondId, out UserSessionApiResponseModel? value) || value == null || refreshToken != value.RefreshToken)
             {
                 return null;
             }
             string newSessionId = Guid.NewGuid().ToString("N");
-            UserSessionApiResponseModel result = GenerateToken(value.Username, value.Roles, newSessionId);
+            UserSessionApiResponseModel result = GenerateToken(userId, value.Username, value.Roles, newSessionId);
             cache.Remove(oldSessiondId);
             return result;
         }
 
-        private UserSessionApiResponseModel GenerateToken(string username, IEnumerable<string> roles, string sessionId)
+        private UserSessionApiResponseModel GenerateToken(int userId, string username, IEnumerable<string> roles, string sessionId)
         {
             List<Claim> claims =
             [
                 new(ClaimTypes.NameIdentifier, username),
                 new("SessionId", sessionId),
-                new Claim("Constant", "sas")
+                new("Id", userId.ToString()),
+                CustomClaimTypesStorage.ConstantClaim.Claim
             ];
             roles.ToList().ForEach(r =>
             {

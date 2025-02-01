@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MySuperDuperPetProject.Extensions;
 using MySuperDuperPetProject.Middle;
 using MySuperDuperPetProject.Models;
 using System.ComponentModel.DataAnnotations;
@@ -18,7 +19,6 @@ namespace MySuperDuperPetProject.Controllers
         
 
         [HttpPost("[action]")]
-
         public async Task<IActionResult> Register([Required][FromBody] RegisterApiRequestModel model)
         {
             if (string.IsNullOrWhiteSpace(model.Username))
@@ -57,17 +57,17 @@ namespace MySuperDuperPetProject.Controllers
             {
                 return BadRequest("Empty session id");
             }
-            UserSessionApiResponseModel? response = logic.RefreshSession(refreshToken, sessionId);
+            if (!User.GetUserId(out int userId))
+            {
+                return Unauthorized();
+            }
+
+            UserSessionApiResponseModel? response = logic.RefreshSession(refreshToken, sessionId, userId);
             return response != null ? Ok(response) : Unauthorized();
         }
        
         [HttpPut("change/password")]
         [Authorize(Roles = "Users.ChangePassword")]
-
-
-
-       
-
         public async Task<IActionResult> ChangeUserPassword([Required][FromBody] ChangePasswordApiRequestModel model)
         {
             if (string.IsNullOrWhiteSpace(model.CurrentPassword))
@@ -120,6 +120,7 @@ namespace MySuperDuperPetProject.Controllers
             {
                 return BadRequest("Empty roles");
             }
+            //TODO: Сделать проверку на соответствие присланных ролей системным
             return await logic.CreateOrUpdateRole(model.Name, model.Roles!) ? Ok() : StatusCode(500);
         }
         [HttpGet("roles")]

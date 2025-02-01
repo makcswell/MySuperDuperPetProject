@@ -17,6 +17,7 @@ namespace MySuperDuperPetProject
             services.AddDbContext<TransferDbContext>(d => d.UseNpgsql(config.GetConnectionString("MyConnection")), ServiceLifetime.Scoped, ServiceLifetime.Scoped);
 
             services.AddSingleton<CheckUserSessionMiddleware>();
+            services.AddSingleton<ClaimsCheckMiddleware>();
 
             services.AddMemoryCache();
 
@@ -82,6 +83,7 @@ namespace MySuperDuperPetProject
             app.UseSwagger();
             app.UseSwaggerUI();
 
+            app.AddClaimsCheckMiddleware();
             app.AddCheckUserSessionMiddleware();
             
 

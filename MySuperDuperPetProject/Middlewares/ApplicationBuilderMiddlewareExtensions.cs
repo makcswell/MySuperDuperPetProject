@@ -6,5 +6,9 @@
         {
             return app.UseMiddleware<CheckUserSessionMiddleware>();
         }
+        public static IApplicationBuilder AddClaimsCheckMiddleware(this IApplicationBuilder app)
+        {
+            return app.UseMiddleware<ClaimsCheckMiddleware>();
+        }
     }
 }

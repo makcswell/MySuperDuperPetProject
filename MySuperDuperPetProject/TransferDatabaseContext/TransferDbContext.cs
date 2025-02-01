@@ -35,7 +35,7 @@ namespace MySuperDuperPetProject.TransferDatabaseContext
             {
                 conf.HasKey(t => t.Id);
                 conf.Property(d => d.Id).ValueGeneratedOnAdd();
-                conf.HasOne(t => t.User).WithMany(u => u.Transfers);
+                conf.HasOne(t => t.User).WithMany(u => u.Transfers).HasForeignKey(u => u.UserId);
             });
 
             build.Entity<TransfersStatistic>(conf =>
@@ -87,7 +87,10 @@ namespace MySuperDuperPetProject.TransferDatabaseContext
         [Required]
         public int Id { get; set; }
         [Required]
-        public User User { get; set; } = null!;
+        public User? User { get; set; }
+        [Required]
+        [ForeignKey(nameof(User))]
+        public int UserId { get; set; }
         [Required]
         public string PageFrom { get; set; } = null!;
         [Required]
