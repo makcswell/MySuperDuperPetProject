@@ -108,17 +108,10 @@ namespace MySuperDuperPetProject.Middle
 
         }
 
-        public async Task<IEnumerable<TransferStatisticResponseModel>?> GetMostPopularTransfer(string username, int count, CancellationToken token = default)
+        public async Task<IEnumerable<TransferStatisticResponseModel>?> GetMostPopularTransfer(int count, CancellationToken token = default)
         {
 
-            User? userEntity = await db.Users.FirstOrDefaultAsync(u => u.Name == username, token);
-
-            if (userEntity == null)
-            {
-                logger.LogWarning("User not found: {username}", username);
-
-                throw new UnauthorizedAccessException("User not authorized.");
-            }
+           
             try
             {
                 return await db.TransfersStatistics.OrderByDescending(ts => ts.Count).Take(count).AsNoTracking().Select(ts => new TransferStatisticResponseModel(ts.Count, ts.From, ts.To)).ToListAsync(token);

@@ -66,7 +66,7 @@ namespace MySuperDuperPetProject.Controllers
             {
                 return BadRequest("Кол-во переходов не должно быть меньше или равно нулю!");
             }
-            IEnumerable<TransferStatisticResponseModel>? res = await logic.GetMostPopularTransfer(username, count, HttpContext.RequestAborted);
+            IEnumerable<TransferStatisticResponseModel>? res = await logic.GetMostPopularTransfer(count, HttpContext.RequestAborted);
             if (res == null)
             {
                 return StatusCode(502, "Internal database error!");

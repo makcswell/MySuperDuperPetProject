@@ -83,6 +83,8 @@ namespace MySuperDuperPetProject
             app.UseSwaggerUI();
 
             app.AddCheckUserSessionMiddleware();
+            
+
 
             app.UseEndpoints(endpoints =>
             {
