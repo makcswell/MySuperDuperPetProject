@@ -12,9 +12,9 @@ namespace MySuperDuperPetProject.Extensions
             }
             return true;
         }
-        public static bool GetUsername(this ClaimsPrincipal claims, out string username)
+        public static bool GetUsername(this ClaimsPrincipal claims, string? username)
         {
-            string? stringValue = claims.Claims.FirstOrDefault(c=> c.Type== "username")?.Value;  
+            string? stringValue = claims.Claims.FirstOrDefault(c=> c.Type==ClaimTypes.NameIdentifier)?.Value;  
             if (string.IsNullOrEmpty(stringValue))
             {
                 username = string.Empty;

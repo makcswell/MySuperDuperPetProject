@@ -35,8 +35,8 @@ namespace MySuperDuperPetProject.Middle
                 //
                 //    return false;
                 //}
-                bool? userExists = await db.Users.AnyAsync(u => u.Id == userId, token);
-                if (userExists == null)
+                bool? TryGetUsername = await db.Users.AnyAsync(u => u.Id == userId, token);
+                if (TryGetUsername == false)
                 {
                     logger.LogWarning("Пользователь не найден: {userID}", userId);
                     return false;
@@ -45,7 +45,7 @@ namespace MySuperDuperPetProject.Middle
                 {
                     PageFrom = from,
                     PageTo = to,
-                    TransferUTC = DateTimeOffset.UtcNow,
+                    TransferUTC = DateTimeOffset.UtcNow, 
                     UserId= userId,
                 };
                 await db.Transfers.AddAsync(trans, token);
@@ -62,6 +62,7 @@ namespace MySuperDuperPetProject.Middle
                         From = from,
                         To = to,
                     };
+
                     await db.TransfersStatistics.AddAsync(stat, token);
                 }
                 else

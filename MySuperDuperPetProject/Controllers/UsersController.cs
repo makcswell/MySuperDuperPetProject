@@ -16,7 +16,7 @@ namespace MySuperDuperPetProject.Controllers
     [ApiController]
     public class UsersController(ILogger<UsersController> logger, UsersLogic logic) : ControllerBase
     {
-        
+
 
         [HttpPost("[action]")]
         public async Task<IActionResult> Register([Required][FromBody] RegisterApiRequestModel model)
@@ -65,7 +65,7 @@ namespace MySuperDuperPetProject.Controllers
             UserSessionApiResponseModel? response = logic.RefreshSession(refreshToken, sessionId, userId);
             return response != null ? Ok(response) : Unauthorized();
         }
-       
+
         [HttpPut("change/password")]
         [Authorize(Roles = "Users.ChangePassword")]
         public async Task<IActionResult> ChangeUserPassword([Required][FromBody] ChangePasswordApiRequestModel model)
@@ -79,22 +79,22 @@ namespace MySuperDuperPetProject.Controllers
                 return BadRequest("Empty new pas");
             }
 
-            string? username = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value; //берем username из JWT
+            string? username = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value; //берем username из 
 
-            if (string.IsNullOrWhiteSpace(username))
+            if (!User.GetUsername(username))
             {
-                return Unauthorized("There's no username in JWT!");
+                return Unauthorized();
             }
             string? sessionId = User.Claims.FirstOrDefault(c => c.Type == "SessionId")?.Value;
             if (string.IsNullOrWhiteSpace(sessionId))
             {
                 return Unauthorized("There's no sessionId in JWT!");
             }
-            
+
 
             return await logic.ChangeUserPassword(username, PasswordHasher.HashPassword(model.CurrentPassword), PasswordHasher.HashPassword(model.NewPassword), sessionId, HttpContext.RequestAborted) ? Ok() : NotFound();
         }
-   
+
         [HttpGet("user/{username}")]
         [Authorize]
         public async Task<IActionResult> GetUserByUsername(string username)
@@ -121,6 +121,19 @@ namespace MySuperDuperPetProject.Controllers
                 return BadRequest("Empty roles");
             }
             //TODO: Сделать проверку на соответствие присланных ролей системным
+            string? username = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value; //берем username из 
+
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return Unauthorized("There's no username in JWT!");
+            }
+
+            if (!User.GetUsername(username))
+            {
+                return Unauthorized("Username not found");
+            }
+
+
             return await logic.CreateOrUpdateRole(model.Name, model.Roles!) ? Ok() : StatusCode(500);
         }
         [HttpGet("roles")]
@@ -135,9 +148,9 @@ namespace MySuperDuperPetProject.Controllers
             return Ok(RolesCollectionStorage.Roles);
         }
     }
-  
 
 
 
 
-        }
+
+}
