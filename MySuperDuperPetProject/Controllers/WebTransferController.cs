@@ -14,17 +14,15 @@ namespace MySuperDuperPetProject.Controllers
     public class WebTransferController(ILogger<WebTransferController> logger, ITransferLogic logic) : ControllerBase
     {
 
-        private string? GetUsernameFromToken()
-        {
-            string? username = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            return username;// Извлекаем username из токена
-        }
+
 
         [HttpPost("transfer/{from}/{to}/")]
-        [ProducesResponseType(typeof(string), 502)]
-        public async Task<IActionResult> PostTransfer([Required][FromRoute] string from, [Required][FromRoute] string to)// добавил username
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> PostTransfer([Required][FromRoute] string from, [Required][FromRoute] string to)
         {
-            string? username = GetUsernameFromToken();
+            string? username = User.GetUsername();
             if (string.IsNullOrWhiteSpace(username) || !User.GetUserId(out int userId))
             {
                 return Unauthorized();
@@ -38,15 +36,15 @@ namespace MySuperDuperPetProject.Controllers
             {
                 return Ok();
             }
-            return StatusCode(502, "Internal database error!");
+            return StatusCode(500, "Internal database error!");
         }
         [HttpGet("user/transfers")]
-        [ProducesResponseType(typeof(IEnumerable<>), 200)]
-        [ProducesResponseType(typeof(string), 400)]
-        [ProducesResponseType(typeof(string), 502)]
-        public async Task<IActionResult> GetUserTransfersByPeriod([Required][FromQuery] DateTimeOffset from, [Required][FromQuery] DateTimeOffset to)//добавил username
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetUserTransfersByPeriod([Required][FromQuery] DateTimeOffset from, [Required][FromQuery] DateTimeOffset to)
         {
-            string? username = GetUsernameFromToken();
+            string? username = User.GetUsername();
             if (string.IsNullOrWhiteSpace(username))
             {
                 return Unauthorized();
@@ -59,14 +57,14 @@ namespace MySuperDuperPetProject.Controllers
             IEnumerable<TransferResponseModel>? trans = await logic.GetTransfers(from, to, HttpContext.RequestAborted);
             if (trans == null)
             {
-                return StatusCode(502, "Internal database error!");
+                return StatusCode(500, "Internal database error!");
             }
             return Ok(trans);
         }
         [HttpGet("transfers/{count}")]
-        [ProducesResponseType(typeof(IEnumerable<TransferStatisticResponseModel>), 200)]
-        [ProducesResponseType(typeof(string), 400)]
-        [ProducesResponseType(typeof(string), 502)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetMostPopularTransfers([Required][FromRoute] int count)
         {
             if (count <= 0)
@@ -76,7 +74,7 @@ namespace MySuperDuperPetProject.Controllers
             IEnumerable<TransferStatisticResponseModel>? res = await logic.GetMostPopularTransfer(count, HttpContext.RequestAborted);
             if (res == null)
             {
-                return StatusCode(502, "Internal database error!");
+                return StatusCode(500, "Internal database error!");
             }
             return Ok(res);
         }

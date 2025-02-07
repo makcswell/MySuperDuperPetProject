@@ -27,14 +27,7 @@ namespace MySuperDuperPetProject.Middle
             await using IDbContextTransaction transaction = await db.Database.BeginTransactionAsync(token);
             try
             {
-                //User? userEntity = await db.Users.FirstOrDefaultAsync(u => u.Name == username, token);
-                //
-                //if (userEntity == null)
-                //{
-                //    logger.LogWarning("User not found: {username}", username);
-                //
-                //    return false;
-                //}
+                
                 bool? TryGetUsername = await db.Users.AnyAsync(u => u.Id == userId, token);
                 if (TryGetUsername == false)
                 {

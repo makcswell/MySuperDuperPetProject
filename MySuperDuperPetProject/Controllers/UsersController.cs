@@ -8,7 +8,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 
 
-//05.01.2025
 
 namespace MySuperDuperPetProject.Controllers
 {
@@ -21,7 +20,11 @@ namespace MySuperDuperPetProject.Controllers
 
 
         [HttpPost("[action]")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public async Task<IActionResult> Register([Required][FromBody] RegisterApiRequestModel model)
+
         {
             if (string.IsNullOrWhiteSpace(model.Username))
             {
@@ -34,6 +37,10 @@ namespace MySuperDuperPetProject.Controllers
             return await logic.CreateUser(model.Username, PasswordHasher.HashPassword(model.Password), model.RoleId, HttpContext.RequestAborted) ? Ok() : BadRequest("Error on creating!");
         }
         [HttpPost("[action]")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+
         public async Task<IActionResult> Login([Required][FromBody] LoginApiRequestApiModel model)
         {
             if (string.IsNullOrWhiteSpace(model.Username))
@@ -49,6 +56,11 @@ namespace MySuperDuperPetProject.Controllers
         }
         [HttpPost("[action]/token")]
         [AllowAnonymous]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+
         public IActionResult Refresh([Required][FromQuery] string refreshToken, [Required][FromQuery] string sessionId)
         {
             if (string.IsNullOrWhiteSpace(refreshToken))
@@ -70,6 +82,10 @@ namespace MySuperDuperPetProject.Controllers
 
         [HttpPut("change/password")]
         [Authorize(Roles = "Users.ChangePassword")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> ChangeUserPassword([Required][FromBody] ChangePasswordApiRequestModel model)
         {
             if (string.IsNullOrWhiteSpace(model.CurrentPassword))
@@ -98,6 +114,8 @@ namespace MySuperDuperPetProject.Controllers
 
         [HttpGet("user/{username}")]
         [Authorize]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUserByUsername(string username)
         {
             if (string.IsNullOrWhiteSpace(username))
@@ -109,6 +127,9 @@ namespace MySuperDuperPetProject.Controllers
         }
 
         [HttpPost("role")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> CreateOrUpdateRole([Required][FromBody] CreateRolesApiRequestModel model)
         {
@@ -120,9 +141,7 @@ namespace MySuperDuperPetProject.Controllers
             {
                 return BadRequest("Empty roles");
             }
-            //TODO: Сделать проверку на соответствие присланных ролей системным
-            //string? username = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value; //берем username из 
-            var invalidRoles = (model.Roles ?? Enumerable.Empty<string>()).Except(RolesCollectionStorage.Roles).ToList();
+            List<string> invalidRoles = (model.Roles ?? Enumerable.Empty<string>()).Except(RolesCollectionStorage.Roles).ToList();
             if (invalidRoles.Count > 0)
             {
                 return BadRequest("Roles not equals to system roles");

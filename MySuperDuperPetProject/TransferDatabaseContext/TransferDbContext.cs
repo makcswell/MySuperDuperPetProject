@@ -9,7 +9,7 @@ namespace MySuperDuperPetProject.TransferDatabaseContext
         public TransferDbContext(DbContextOptions<TransferDbContext> options) : base(options)
         {
             Database.EnsureCreated();
-            //Database.Migrate();
+
         }
         public virtual DbSet<User> Users { get; set; } = null!;
         public virtual DbSet<Transfers> Transfers { get; set; } = null!;
@@ -60,7 +60,7 @@ namespace MySuperDuperPetProject.TransferDatabaseContext
         [Key]
         [Required]
         public int Id { get; set; }
-      
+
         [Required]
         public string Name { get; set; } = null!;
         [Required]

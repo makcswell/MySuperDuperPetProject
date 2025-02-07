@@ -44,7 +44,7 @@ namespace MySuperDuperPetProject
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(SecretKeyStorage.SecretKey)),
-                    ClockSkew = TimeSpan.Zero // remove delay of token when expire
+                    ClockSkew = TimeSpan.Zero
                 };
             });
 
@@ -85,7 +85,7 @@ namespace MySuperDuperPetProject
 
             app.AddClaimsCheckMiddleware();
             app.AddCheckUserSessionMiddleware();
-            
+
 
 
             app.UseEndpoints(endpoints =>
