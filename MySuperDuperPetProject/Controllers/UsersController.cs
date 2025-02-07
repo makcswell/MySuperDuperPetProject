@@ -79,11 +79,11 @@ namespace MySuperDuperPetProject.Controllers
                 return BadRequest("Empty new pas");
             }
 
-            string? username = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value; //берем username из 
+            string? username = User.GetUsername();
 
-            if (!User.GetUsername(username))
+            if (string.IsNullOrWhiteSpace(username))
             {
-                return Unauthorized();
+                return Unauthorized("Please regenerate token");
             }
             string? sessionId = User.Claims.FirstOrDefault(c => c.Type == "SessionId")?.Value;
             if (string.IsNullOrWhiteSpace(sessionId))
@@ -108,7 +108,6 @@ namespace MySuperDuperPetProject.Controllers
             return user != null ? Ok(user) : NotFound("User not found");
         }
 
-
         [HttpPost("role")]
         public async Task<IActionResult> CreateOrUpdateRole([Required][FromBody] CreateRolesApiRequestModel model)
         {
@@ -121,18 +120,13 @@ namespace MySuperDuperPetProject.Controllers
                 return BadRequest("Empty roles");
             }
             //TODO: Сделать проверку на соответствие присланных ролей системным
-            string? username = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value; //берем username из 
+            //string? username = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value; //берем username из 
 
-            if (string.IsNullOrWhiteSpace(username))
+            var invalidRoles = (model.Roles ?? Enumerable.Empty<string>()).Except(RolesCollectionStorage.Roles).ToList();
+            if (invalidRoles.Count > 0)
             {
-                return Unauthorized("There's no username in JWT!");
+                return BadRequest("Roles not equals to system roles");
             }
-
-            if (!User.GetUsername(username))
-            {
-                return Unauthorized("Username not found");
-            }
-
 
             return await logic.CreateOrUpdateRole(model.Name, model.Roles!) ? Ok() : StatusCode(500);
         }

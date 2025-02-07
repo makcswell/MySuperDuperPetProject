@@ -22,6 +22,7 @@ namespace MySuperDuperPetProject.TransferDatabaseContext
                 conf.HasKey(u => u.Id);
                 conf.Property(d => d.Id).ValueGeneratedOnAdd();
                 conf.HasOne(u => u.Role).WithMany(r => r.Users);
+                conf.HasIndex(u => u.Name).HasDatabaseName("IX_Users_Name").HasMethod("hash").IsUnique();
             });
 
             build.Entity<Role>(conf =>
@@ -41,6 +42,7 @@ namespace MySuperDuperPetProject.TransferDatabaseContext
             build.Entity<TransfersStatistic>(conf =>
             {
                 conf.HasKey(t => t.HashId);
+                conf.HasIndex(t => t.HashId).HasDatabaseName("IX_TransferStatistic_HashId").IsUnique();
             });
         }
         protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
@@ -58,6 +60,7 @@ namespace MySuperDuperPetProject.TransferDatabaseContext
         [Key]
         [Required]
         public int Id { get; set; }
+      
         [Required]
         public string Name { get; set; } = null!;
         [Required]
