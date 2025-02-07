@@ -180,7 +180,7 @@ namespace MySuperDuperPetProject.Middle
                 return new UsersApiModel
                 {
                     Id = user.Id,
-                    username = user.Name,
+                    Username = user.Name,
 
                 };
 

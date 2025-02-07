@@ -21,6 +21,7 @@ namespace MySuperDuperPetProject.Controllers
         }
 
         [HttpPost("transfer/{from}/{to}/")]
+        [ProducesResponseType(typeof(string), 502)]
         public async Task<IActionResult> PostTransfer([Required][FromRoute] string from, [Required][FromRoute] string to)// добавил username
         {
             string? username = GetUsernameFromToken();
@@ -40,6 +41,9 @@ namespace MySuperDuperPetProject.Controllers
             return StatusCode(502, "Internal database error!");
         }
         [HttpGet("user/transfers")]
+        [ProducesResponseType(typeof(IEnumerable<>), 200)]
+        [ProducesResponseType(typeof(string), 400)]
+        [ProducesResponseType(typeof(string), 502)]
         public async Task<IActionResult> GetUserTransfersByPeriod([Required][FromQuery] DateTimeOffset from, [Required][FromQuery] DateTimeOffset to)//добавил username
         {
             string? username = GetUsernameFromToken();

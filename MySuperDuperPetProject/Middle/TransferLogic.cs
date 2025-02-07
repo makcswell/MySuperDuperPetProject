@@ -45,8 +45,8 @@ namespace MySuperDuperPetProject.Middle
                 {
                     PageFrom = from,
                     PageTo = to,
-                    TransferUTC = DateTimeOffset.UtcNow, 
-                    UserId= userId,
+                    TransferUTC = DateTimeOffset.UtcNow,
+                    UserId = userId,
                 };
                 await db.Transfers.AddAsync(trans, token);
 

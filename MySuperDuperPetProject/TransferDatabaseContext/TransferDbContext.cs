@@ -42,7 +42,7 @@ namespace MySuperDuperPetProject.TransferDatabaseContext
             build.Entity<TransfersStatistic>(conf =>
             {
                 conf.HasKey(t => t.HashId);
-                conf.HasIndex(t => t.HashId).HasDatabaseName("IX_TransferStatistic_HashId").IsUnique();
+                conf.HasIndex(t => t.HashId).HasDatabaseName("IX_TransferStatistic_HashId").HasMethod("hash").IsUnique();
             });
         }
         protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)

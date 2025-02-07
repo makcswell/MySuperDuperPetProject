@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using MySuperDuperPetProject.Extensions;
 using MySuperDuperPetProject.Middle;
 using MySuperDuperPetProject.Models;
@@ -14,6 +15,7 @@ namespace MySuperDuperPetProject.Controllers
 
     [Route("[controller]")]
     [ApiController]
+
     public class UsersController(ILogger<UsersController> logger, UsersLogic logic) : ControllerBase
     {
 
@@ -91,7 +93,6 @@ namespace MySuperDuperPetProject.Controllers
                 return Unauthorized("There's no sessionId in JWT!");
             }
 
-
             return await logic.ChangeUserPassword(username, PasswordHasher.HashPassword(model.CurrentPassword), PasswordHasher.HashPassword(model.NewPassword), sessionId, HttpContext.RequestAborted) ? Ok() : NotFound();
         }
 
@@ -103,12 +104,12 @@ namespace MySuperDuperPetProject.Controllers
             {
                 return BadRequest("Empty username");
             }
-
             UsersApiModel? user = await logic.GetUsernameFromDB(username, HttpContext.RequestAborted);
             return user != null ? Ok(user) : NotFound("User not found");
         }
 
         [HttpPost("role")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> CreateOrUpdateRole([Required][FromBody] CreateRolesApiRequestModel model)
         {
             if (string.IsNullOrWhiteSpace(model.Name))
@@ -121,7 +122,6 @@ namespace MySuperDuperPetProject.Controllers
             }
             //TODO: Сделать проверку на соответствие присланных ролей системным
             //string? username = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value; //берем username из 
-
             var invalidRoles = (model.Roles ?? Enumerable.Empty<string>()).Except(RolesCollectionStorage.Roles).ToList();
             if (invalidRoles.Count > 0)
             {
@@ -131,20 +131,18 @@ namespace MySuperDuperPetProject.Controllers
             return await logic.CreateOrUpdateRole(model.Name, model.Roles!) ? Ok() : StatusCode(500);
         }
         [HttpGet("roles")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllRoles()
         {
             IReadOnlyList<RoleApiModel>? roles = await logic.GetRoles(HttpContext.RequestAborted);
             return roles != null && roles.Count > 0 ? Ok(roles) : StatusCode(500);
         }
         [HttpGet("roles/system")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult GetSystemRoles()
         {
             return Ok(RolesCollectionStorage.Roles);
         }
     }
-
-
-
-
-
 }
