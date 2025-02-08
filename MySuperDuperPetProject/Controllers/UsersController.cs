@@ -21,7 +21,6 @@ namespace MySuperDuperPetProject.Controllers
 
         [HttpPost("[action]")]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public async Task<IActionResult> Register([Required][FromBody] RegisterApiRequestModel model)
 
@@ -37,7 +36,6 @@ namespace MySuperDuperPetProject.Controllers
             return await logic.CreateUser(model.Username, PasswordHasher.HashPassword(model.Password), model.RoleId, HttpContext.RequestAborted) ? Ok() : BadRequest("Error on creating!");
         }
         [HttpPost("[action]")]
-        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
 
@@ -56,7 +54,6 @@ namespace MySuperDuperPetProject.Controllers
         }
         [HttpPost("[action]/token")]
         [AllowAnonymous]
-        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
