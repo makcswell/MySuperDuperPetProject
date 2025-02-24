@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -35,14 +36,25 @@ namespace MySuperDuperPetProject.Middle
                 try
                 {
                     await Task.Delay(_cleanupInterval, stoppingToken);
-                    using var scope = _serviceProvider.CreateScope();
-                    await using var db = scope.ServiceProvider.GetRequiredService<TransferDbContext>();
-                    var thresholdDate = DateTimeOffset.UtcNow - _retentionPeriod;
-                    var oldTransfers = db.Transfers.Where(t => t.TransferUTC < thresholdDate);
-                    db.Transfers.RemoveRange(oldTransfers);
-                    await db.SaveChangesAsync(stoppingToken);
+                    using IServiceScope scope = _serviceProvider.CreateScope();
+                    await using TransferDbContext db = scope.ServiceProvider.GetRequiredService<TransferDbContext>();
+                    DateTimeOffset thresholdDate = DateTimeOffset.UtcNow - _retentionPeriod;
+                    IQueryable<Transfers> oldTransfers = db.Transfers.Where(t => t.TransferUTC < thresholdDate);
 
-                    _logger.LogInformation("Старые переходы удалены: {Count}", oldTransfers.Count());
+                    List<Transfers> oldTransfersList = await oldTransfers.ToListAsync(stoppingToken);
+                    if (oldTransfersList.Count != 0)
+                    {
+                        db.Transfers.RemoveRange(oldTransfersList);
+                        await db.SaveChangesAsync(stoppingToken);
+                        _logger.LogInformation("Старые переходы удалены: {Count}", oldTransfersList.Count);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("Нет старых переходов для удаления.");
+                    }
+                   
+
+                   
                 }
                 catch (Exception ex)
                 {
