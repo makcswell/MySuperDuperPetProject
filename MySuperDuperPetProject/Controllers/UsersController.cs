@@ -29,6 +29,7 @@ namespace MySuperDuperPetProject.Controllers
             {
                 return BadRequest("Empty username");
             }
+            
             if (string.IsNullOrWhiteSpace(model.Password))
             {
                 return BadRequest("Empty pas!");

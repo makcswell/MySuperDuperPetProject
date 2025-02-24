@@ -5,10 +5,13 @@ using Microsoft.OpenApi.Models;
 using MySuperDuperPetProject.Middle;
 using MySuperDuperPetProject.Middlewares;
 using MySuperDuperPetProject.TransferDatabaseContext;
+using static MySuperDuperPetProject.Middle.OldTransitionsRemover;
+using Microsoft.Extensions.Configuration;
 
 namespace MySuperDuperPetProject
 {
     public class Startup(IConfiguration config)
+
     {
         public void ConfigureServices(IServiceCollection services)
         {
@@ -72,6 +75,8 @@ namespace MySuperDuperPetProject
                  });
             });
             services.AddRouting(urls => urls.LowercaseUrls = true);
+            services.Configure<CleanupOptions>(config.GetSection("CleanupOptions"));
+            services.AddHostedService<OldTransitionsRemover>();
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
