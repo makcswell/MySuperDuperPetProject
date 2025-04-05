@@ -1,7 +1,7 @@
 name: workflow.yml
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "master" ]
     
 jobs:
   build:
@@ -17,5 +17,5 @@ jobs:
       - name: Restore
         run: dotnet restore MySuperDuperPetProject.sln
       - name: Publish
-        run: dotnet publish MySuperDuperPetProject.sln -c Release
+        run: dotnet publish MySuperDuperPetProject.sln -c Release --no-restore
 
