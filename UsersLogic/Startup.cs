@@ -2,9 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using MySuperDuperPetProject.Middle; 
-using MySuperDuperPetProject.TransferDatabaseContext;
-using static MySuperDuperPetProject.Middle.OldTransitionsRemover;
+using UsersLogic.Middle;
+using UsersLogic.Middlewares;
+using UsersLogic.TransferDatabaseContext;
+using static UsersLogic.Middle.OldTransitionsRemover;
 using Microsoft.Extensions.Configuration;
 
 namespace MySuperDuperPetProject
@@ -14,12 +15,13 @@ namespace MySuperDuperPetProject
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddScoped<ITransferLogic, TransferLogic>();
-           //services.AddScoped<UsersLogic>();
-          
+            
+     
+            services.AddScoped<UsersLogic>();
             services.AddDbContext<TransferDbContext>(d => d.UseNpgsql(config.GetConnectionString("MyConnection")), ServiceLifetime.Scoped, ServiceLifetime.Scoped);
 
-           
+            services.AddSingleton<CheckUserSessionMiddleware>();
+            services.AddSingleton<ClaimsCheckMiddleware>();
 
             services.AddMemoryCache();
 
@@ -74,8 +76,7 @@ namespace MySuperDuperPetProject
                  });
             });
             services.AddRouting(urls => urls.LowercaseUrls = true);
-            services.Configure<CleanupOptions>(config.GetSection("CleanupOptions"));
-            services.AddHostedService<OldTransitionsRemover>();
+
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -87,6 +88,8 @@ namespace MySuperDuperPetProject
             app.UseSwagger();
             app.UseSwaggerUI();
 
+            app.AddClaimsCheckMiddleware();
+            app.AddCheckUserSessionMiddleware();
 
 
 
