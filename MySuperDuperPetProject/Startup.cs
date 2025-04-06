@@ -5,19 +5,19 @@ using Microsoft.OpenApi.Models;
 using MySuperDuperPetProject.Middle;
 using MySuperDuperPetProject.Middlewares;
 using MySuperDuperPetProject.TransferDatabaseContext;
+using StaticStorages;
 using static MySuperDuperPetProject.Middle.OldTransitionsRemover;
-using Microsoft.Extensions.Configuration;
 
 namespace MySuperDuperPetProject
 {
     public class Startup(IConfiguration config)
-
     {
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<ITransferLogic, TransferLogic>();
             services.AddScoped<UsersLogic>();
-            services.AddDbContext<TransferDbContext>(d => d.UseNpgsql(config.GetConnectionString("MyConnection")), ServiceLifetime.Scoped, ServiceLifetime.Scoped);
+            services.AddDbContext<TransferDbContext>(d => d.UseNpgsql(config.GetConnectionString("MyConnection")),
+                ServiceLifetime.Scoped, ServiceLifetime.Scoped);
 
             services.AddSingleton<CheckUserSessionMiddleware>();
             services.AddSingleton<ClaimsCheckMiddleware>();
@@ -28,28 +28,27 @@ namespace MySuperDuperPetProject
             services.AddMvc();
 
             services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-
-
-            })
-            .AddJwtBearer(cfg =>
-            {
-                cfg.RequireHttpsMetadata = false;
-                cfg.SaveToken = true;
-                cfg.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidIssuer = config["JwtIssuer"],
-                    ValidateIssuer = true,
-                    ValidateAudience = false,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(SecretKeyStorage.SecretKey)),
-                    ClockSkew = TimeSpan.Zero
-                };
-            });
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(cfg =>
+                {
+                    cfg.RequireHttpsMetadata = false;
+                    cfg.SaveToken = true;
+                    cfg.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidIssuer = config["JwtIssuer"],
+                        ValidateIssuer = true,
+                        ValidateAudience = false,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey =
+                            new SymmetricSecurityKey(Convert.FromBase64String(SecretKeyStorage.SecretKey)),
+                        ClockSkew = TimeSpan.Zero
+                    };
+                });
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -61,10 +60,11 @@ namespace MySuperDuperPetProject
                     Name = "Authorization",
                     Scheme = "bearer",
                     BearerFormat = "jwt-bearer",
-                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\""
+                    Description =
+                        "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\""
                 });
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                 {
+                {
                     {
                         new OpenApiSecurityScheme
                         {
@@ -72,12 +72,13 @@ namespace MySuperDuperPetProject
                         },
                         Array.Empty<string>()
                     }
-                 });
+                });
             });
             services.AddRouting(urls => urls.LowercaseUrls = true);
             services.Configure<CleanupOptions>(config.GetSection("CleanupOptions"));
             services.AddHostedService<OldTransitionsRemover>();
         }
+
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseRouting();
@@ -92,11 +93,7 @@ namespace MySuperDuperPetProject
             app.AddCheckUserSessionMiddleware();
 
 
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
     }
 }

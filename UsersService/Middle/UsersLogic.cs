@@ -1,15 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.IdentityModel.Tokens;
-using MySuperDuperPetProject.Models;
-using MySuperDuperPetProject.TransferDatabaseContext;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.IdentityModel.Tokens;
+using MyDatabase;
 using StaticStorages;
+using UsersService.Models;
 
-namespace MySuperDuperPetProject.Middle
-{
-    public class UsersLogic(ILogger<UsersLogic> logger, TransferDbContext db, IConfiguration config, IMemoryCache cache)
+namespace UsersService.Middle;
+
+public class UsersLogic(ILogger<UsersLogic> logger, TransferDbContext db, IConfiguration config, IMemoryCache cache)
     {
         private readonly TimeSpan tokenLifeTime = TimeSpan.FromMinutes(int.Parse(config["TokenLifeTime"] ?? "15"));
         private readonly TimeSpan refreshLifeTime = TimeSpan.FromMinutes(int.Parse(config["RefreshTokenLifeTime"] ?? "30"));
@@ -212,4 +212,3 @@ namespace MySuperDuperPetProject.Middle
             }
         }
     }
-}

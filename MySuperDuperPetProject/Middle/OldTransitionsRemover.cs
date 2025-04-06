@@ -1,34 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MySuperDuperPetProject.TransferDatabaseContext;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 
 namespace MySuperDuperPetProject.Middle
 {
-
-
-
-
-    public class OldTransitionsRemover : BackgroundService
+    public class OldTransitionsRemover(
+        ILogger<OldTransitionsRemover> logger,
+        IServiceProvider serviceProvider,
+        IOptions<OldTransitionsRemover.CleanupOptions> options)
+        : BackgroundService
     {
-        private readonly ILogger<OldTransitionsRemover> logger;
-        private readonly IServiceProvider serviceProvider;
-        private readonly TimeSpan cleanupInterval;
-        private readonly TimeSpan retentionPeriod;
+        private readonly TimeSpan cleanupInterval = options.Value.CleanupInterval;
+        private readonly TimeSpan retentionPeriod = options.Value.RetentionPeriod;
 
-        public OldTransitionsRemover(ILogger<OldTransitionsRemover> logger, IServiceProvider serviceProvider, IOptions<CleanupOptions> options)
-        {
-            this.logger = logger;
-            this.serviceProvider = serviceProvider;
-            this.cleanupInterval = options.Value.CleanupInterval;
-            this.retentionPeriod = options.Value.RetentionPeriod;
-        }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
@@ -52,9 +36,6 @@ namespace MySuperDuperPetProject.Middle
                     {
                         logger.LogInformation("Нет старых переходов для удаления.");
                     }
-
-
-
                 }
                 catch (Exception ex)
                 {
@@ -62,6 +43,7 @@ namespace MySuperDuperPetProject.Middle
                 }
             }
         }
+
         public class CleanupOptions
         {
             public TimeSpan CleanupInterval { get; set; }

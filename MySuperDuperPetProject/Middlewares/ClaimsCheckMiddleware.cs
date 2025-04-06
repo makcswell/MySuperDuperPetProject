@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using MySuperDuperPetProject.Middle;
-
+﻿using MySuperDuperPetProject.Middle;
 
 namespace MySuperDuperPetProject.Middlewares
 {

@@ -11,6 +11,10 @@ namespace MySuperDuperPetProject.Middle
     {
         public string Type { get; private set; } = type;
         public string Value { get; private set; } = value;
-        public readonly Claim Claim { get => new(Type, Value); }
+
+        public readonly Claim Claim
+        {
+            get => new(Type, Value);
+        }
     }
 }
